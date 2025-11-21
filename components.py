@@ -13,6 +13,7 @@ rendering, timing, or input devices.
 """
 
 import random
+from collections import deque
 from typing import List, Tuple
 
 
@@ -120,15 +121,63 @@ class Board:
         self._mines_placed = True
 
     def reveal(self, col: int, row: int) -> None:
-        # TODO: Reveal a cell; if zero-adjacent, iteratively flood to neighbors.
-        # if not self.is_inbounds(col, row):
-        #     return
-        # if not self._mines_placed:
-        #     self.place_mines(col, row)
+        """셀을 오픈하고, 인접 지뢰가 0개면 주변 셀을 반복적으로 오픈."""
+        # 범위 체크
+        if not self.is_inbounds(col, row):
+            return
 
-        
-        # self._check_win()
-        pass
+        # 첫 클릭이면 지뢰 배치
+        if not self._mines_placed:
+            self.place_mines(col, row)
+
+        # 해당 셀의 상태 가져오기
+        cell = self.cells[self.index(col, row)]
+
+        # 이미 열렸거나 플래그가 있으면 무시
+        if cell.state.is_revealed or cell.state.is_flagged:
+            return
+
+        # 지뢰를 밟은 경우
+        if cell.state.is_mine:
+            self.game_over = True
+            self._reveal_all_mines()
+            return
+
+        # BFS로 flood fill 수행
+        queue = deque([(col, row)])
+        visited = set()
+
+        while queue:
+            c, r = queue.popleft()
+
+            # 이미 방문했으면 스킵
+            if (c, r) in visited:
+                continue
+            visited.add((c, r))
+
+            idx = self.index(c, r)
+            current_cell = self.cells[idx]
+
+            # 이미 열렸거나 플래그가 있으면 스킵
+            if current_cell.state.is_revealed or current_cell.state.is_flagged:
+                continue
+
+            # 지뢰면 스킵
+            if current_cell.state.is_mine:
+                continue
+
+            # 셀 오픈
+            current_cell.state.is_revealed = True
+            self.revealed_count += 1
+
+            # 인접 지뢰가 0개면 주변 셀들을 큐에 추가
+            if current_cell.state.adjacent == 0:
+                for nc, nr in self.neighbors(c, r):
+                    if (nc, nr) not in visited:
+                        queue.append((nc, nr))
+
+        # 승리 조건 확인
+        self._check_win()
 
     def toggle_flag(self, col: int, row: int) -> None:
         # TODO: Toggle a flag on a non-revealed cell.
