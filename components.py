@@ -85,19 +85,39 @@ class Board:
         return result
 
     def place_mines(self, safe_col: int, safe_row: int) -> None:
-        # TODO: Place mines randomly, guaranteeing the first click and its neighbors are safe. And Compute adjacency counts
-        # all_positions = [(c, r) for r in range(self.rows) for c in range(self.cols)]
-        # forbidden = {(safe_col, safe_row)} | set(self.neighbors(safe_col, safe_row))
-        # pool = [p for p in all_positions if p not in forbidden]
-        # random.shuffle(pool)
-        
-        # Compute adjacency counts
-        # for r in range(self.rows):
-        #     for c in range(self.cols):
+        """첫 클릭 위치와 그 주변을 안전하게 보장하며 지뢰를 랜덤 배치."""
+        # 보드의 모든 좌표 생성
+        all_positions = [(c, r) for r in range(self.rows) for c in range(self.cols)]
 
-        # self._mines_placed = True
+        # 안전 영역 정의: 첫 클릭 위치 + 인접 셀들
+        forbidden = {(safe_col, safe_row)} | set(self.neighbors(safe_col, safe_row))
 
-        pass
+        # 지뢰 배치 가능한 위치 (안전 영역 제외)
+        pool = [p for p in all_positions if p not in forbidden]
+
+        # 섞어서 지뢰 배치할 위치 선택
+        random.shuffle(pool)
+        mine_positions = pool[:self.num_mines]
+
+        # 지뢰 배치
+        for col, row in mine_positions:
+            idx = self.index(col, row)
+            self.cells[idx].state.is_mine = True
+
+        # 모든 셀의 인접 지뢰 개수 계산
+        for r in range(self.rows):
+            for c in range(self.cols):
+                idx = self.index(c, r)
+                if not self.cells[idx].state.is_mine:
+                    # 주변 지뢰 개수 세기
+                    adjacent_mines = 0
+                    for nc, nr in self.neighbors(c, r):
+                        neighbor_idx = self.index(nc, nr)
+                        if self.cells[neighbor_idx].state.is_mine:
+                            adjacent_mines += 1
+                    self.cells[idx].state.adjacent = adjacent_mines
+
+        self._mines_placed = True
 
     def reveal(self, col: int, row: int) -> None:
         # TODO: Reveal a cell; if zero-adjacent, iteratively flood to neighbors.
