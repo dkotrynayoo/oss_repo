@@ -222,7 +222,6 @@ class Game:
                 self.renderer.draw_cell(c, r, highlighted)
         self.renderer.draw_result_overlay(self._result_text())
 
-
         #NEW: for "RESTART"
         result_text = self._result_text()
         if result_text:
