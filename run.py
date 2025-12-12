@@ -127,13 +127,13 @@ class InputController:
         board=game.board
 
         if game.hintmode:
-            if board.is_inbounds(col,row):
-                cell=board.cells[board.index(col,row)]
+            if game.board.is_inbounds(col,row):
+                cell=game.board.cells[board.index(col,row)]
                 if cell.state.is_mine:
-                    board.toggle_flag(col,row)
-                    game.hintmode=False
+                    game.board.toggle_flag(col,row)
+                    game.game.hintmode=False
                 elif not cell.state.is_revealed and not cell.state.is_mine:
-                    board.reveal(col,row)
+                    game.board.reveal(col,row)
                     game.hintmode=False
                 elif cell.state.is_revealed:
                     game.hintmode=False
@@ -188,6 +188,9 @@ class Game:
         self.start_ticks_ms = 0
         self.end_ticks_ms = 0
 
+        #for issue 4
+        self.hintmode=False
+        
     def _elapsed_ms(self) -> int:
         """Return elapsed time in milliseconds (stops when game ends)."""
         if not self.started:
