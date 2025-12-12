@@ -145,8 +145,6 @@ class InputController:
                     elif not cell.state.is_revealed and not cell.state.is_mine:
                         game.board.reveal(col, row)
                         game.hintnumber -= 1     
-                    elif cell.state.is_revealed:
-                        game.hintmode = False
             return
 
         if button == config.mouse_left:
