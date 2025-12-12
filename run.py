@@ -147,6 +147,23 @@ class InputController:
                         game.hintnumber -= 1     
             return
 
+        #NEW: for issue 4
+        board=game.board
+
+        if game.hintmode:
+            if game.board.is_inbounds(col,row):
+                cell=game.board.cells[board.index(col,row)]
+                if cell.state.is_mine:
+                    game.board.toggle_flag(col,row)
+                    game.game.hintmode=False
+                elif not cell.state.is_revealed and not cell.state.is_mine:
+                    game.board.reveal(col,row)
+                    game.hintmode=False
+                elif cell.state.is_revealed:
+                    game.hintmode=False
+            return
+
+
         if button == config.mouse_left:
             game.board.reveal(col, row)
 
@@ -179,10 +196,8 @@ class Game:
         self.started = False
         self.start_ticks_ms = 0
         self.end_ticks_ms = 0
-
-        #NEW: for issue5
-        self.hintmode=False
-        self.hintnumber=5
+        self.hintmode =False #for issue 4 & 5
+        self.hintnumber=5 #for issue 4 & 5
 
     def reset(self):
         """Reset the game state and start a new board."""
@@ -194,7 +209,7 @@ class Game:
         self.start_ticks_ms = 0
         self.end_ticks_ms = 0
 
-        #NEW: for issue 5
+        #NEW: for issue 4 & 5
         self.hintmode = False
         self.hintnumber =5
 
@@ -251,8 +266,10 @@ class Game:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     self.reset()
-                elif event.key == pygame.K_h: #for issue5
+
+                elif event.key == pygame.K_h: #for issue 4 & 5
                    self.hintmode= not self.hintmode
+
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.input.handle_mouse(event.pos, event.button)
