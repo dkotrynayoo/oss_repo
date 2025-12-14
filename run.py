@@ -211,11 +211,6 @@ class Game:
                 self.renderer.draw_cell(c, r, highlighted)
         self.renderer.draw_result_overlay(self._result_text())
         
-        #NEW: for isssue 1
-        result_text = self._result_text()
-        if result_text:
-            self.renderer.draw_result_overlay(result_text)
-
         pygame.display.flip()
 
     def run_step(self) -> bool:
