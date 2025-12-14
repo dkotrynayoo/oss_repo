@@ -132,6 +132,10 @@ class InputController:
         
         #for issue 4-5 
         if game.hintmode:
+            if game.hintmode <=0:
+                game.hintmode =False
+                return
+            
             if game.board.is_inbounds(col,row):
                     cell = game.board.cells[game.board.index(col, row)]
                     if cell.state.is_mine:
