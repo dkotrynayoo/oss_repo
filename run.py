@@ -38,7 +38,7 @@ class Renderer:
         y = config.margin_top + row * config.cell_size
         return Rect(x, y, config.cell_size, config.cell_size)
 
-    def draw_cell(self, col: int, row: int, highlighted: bool) -> None:
+    def draw_cell(self, col: int, row: int, highlighted: bool,game_over:bool) -> None:  #added game_over:bool
         """Draw a single cell, respecting revealed/flagged state and highlight."""
         cell = self.board.cells[self.board.index(col, row)]
         rect = self.cell_rect(col, row)
@@ -55,20 +55,25 @@ class Renderer:
             base_color = config.color_highlight if highlighted else config.color_cell_hidden
             pygame.draw.rect(self.screen, base_color, rect)
             if cell.state.is_flagged:
-                flag_w = max(6, rect.width // 3)
-                flag_h = max(8, rect.height // 2)
-                pole_x = rect.left + rect.width // 3
-                pole_y = rect.top + 4
-                pygame.draw.line(self.screen, config.color_flag, (pole_x, pole_y), (pole_x, pole_y + flag_h), 2)
-                pygame.draw.polygon(
-                    self.screen,
-                    config.color_flag,
-                    [
-                        (pole_x + 2, pole_y),
-                        (pole_x + 2 + flag_w, pole_y + flag_h // 3),
-                        (pole_x + 2, pole_y + flag_h // 2),
-                    ],
-                )
+                
+                if game_over and not cell.state.is_mine:
+                    pygame.draw.line(self.screen, (200, 200, 0), rect.topleft, rect.bottomright, 3) #for issue 3
+                    pygame.draw.line(self.screen, (200, 200, 0), rect.topright, rect.bottomleft, 3) #for issue3 
+                else:
+                    flag_w = max(6, rect.width // 3)
+                    flag_h = max(8, rect.height // 2)
+                    pole_x = rect.left + rect.width // 3
+                    pole_y = rect.top + 4
+                    pygame.draw.line(self.screen, config.color_flag, (pole_x, pole_y), (pole_x, pole_y + flag_h), 2)
+                    pygame.draw.polygon(
+                        self.screen,
+                        config.color_flag,
+                        [
+                            (pole_x + 2, pole_y),
+                            (pole_x + 2 + flag_w, pole_y + flag_h // 3),
+                            (pole_x + 2, pole_y + flag_h // 2),
+                        ],
+                    )
         pygame.draw.rect(self.screen, config.color_grid, rect, 1)
 
     def draw_header(self, remaining_mines: int, time_text: str, hinttext:str="") -> None: #for issue5
@@ -102,6 +107,13 @@ class Renderer:
         label = self.result_font.render(text, True, config.color_result)
         rect = label.get_rect(center=(config.width // 2, config.height // 2))
         self.screen.blit(label, rect)
+        
+        #NEW: for issue1
+        message="Press R to restart"
+        label = self.result_font.render(message, True, config.color_result)
+        rect = label.get_rect(center=(config.width // 2, config.height // 2+50))
+        self.screen.blit(label,rect)
+
 
 
 class InputController:
@@ -233,12 +245,12 @@ class Game:
 
         
         now = pygame.time.get_ticks()
+        
         for r in range(self.board.rows):
             for c in range(self.board.cols):
                 highlighted = (now <= self.highlight_until_ms) and ((c, r) in self.highlight_targets)
-                self.renderer.draw_cell(c, r, highlighted)
+                self.renderer.draw_cell(c, r, highlighted, self.board.game_over) #added self.board.game_over for issue 3
         self.renderer.draw_result_overlay(self._result_text())
-
         pygame.display.flip()
 
     def run_step(self) -> bool:
@@ -256,6 +268,11 @@ class Game:
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.input.handle_mouse(event.pos, event.button)
+                
+                #NEW: for issue 2
+                if not self.started:
+                    self.started = True
+                    self.start_ticks_ms = pygame.time.get_ticks() 
         if (self.board.game_over or self.board.win) and self.started and not self.end_ticks_ms:
             self.end_ticks_ms = pygame.time.get_ticks()
         self.draw()
