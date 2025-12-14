@@ -130,39 +130,18 @@ class InputController:
 
         game = self.game
         
-        #for issue 5 
+        #for issue 4-5 
         if game.hintmode:
-            if game.hintnumber<=0:
-                print("No hints")
-                game.hintmode=False
-                return
             if game.board.is_inbounds(col,row):
                     cell = game.board.cells[game.board.index(col, row)]
                     if cell.state.is_mine:
                         game.board.toggle_flag(col, row)
                         game.hintnumber -= 1     
-                        game.hintmode = False
                     elif not cell.state.is_revealed and not cell.state.is_mine:
                         game.board.reveal(col, row)
-                        game.hintnumber -= 1     
+                        game.hintnumber -= 1
+            game.hintmode = False 
             return
-
-        #NEW: for issue 4
-        board=game.board
-
-        if game.hintmode:
-            if game.board.is_inbounds(col,row):
-                cell=game.board.cells[board.index(col,row)]
-                if cell.state.is_mine:
-                    game.board.toggle_flag(col,row)
-                    game.game.hintmode=False
-                elif not cell.state.is_revealed and not cell.state.is_mine:
-                    game.board.reveal(col,row)
-                    game.hintmode=False
-                elif cell.state.is_revealed:
-                    game.hintmode=False
-            return
-
 
         if button == config.mouse_left:
             game.board.reveal(col, row)
