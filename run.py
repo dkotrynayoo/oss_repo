@@ -100,6 +100,13 @@ class Renderer:
         label = self.result_font.render(text, True, config.color_result)
         rect = label.get_rect(center=(config.width // 2, config.height // 2))
         self.screen.blit(label, rect)
+        
+        #NEW: for issue1
+        message="Press R to restart"
+        label = self.result_font.render(message, True, config.color_result)
+        rect = label.get_rect(center=(config.width // 2, config.height // 2+50))
+        self.screen.blit(label,rect)
+
 
 
 class InputController:
@@ -209,6 +216,7 @@ class Game:
                 highlighted = (now <= self.highlight_until_ms) and ((c, r) in self.highlight_targets)
                 self.renderer.draw_cell(c, r, highlighted, self.board.game_over) #added self.board.game_over for issue 3
         self.renderer.draw_result_overlay(self._result_text())
+        
         pygame.display.flip()
 
     def run_step(self) -> bool:
